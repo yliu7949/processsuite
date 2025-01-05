@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Info>
+    <MetadataNode>
+        <path value="ProjectData:type:Info">
+            <node name="Info">
+                <entry key="Name" value="wavefunction"/>
+            </node>
+        </path>
+        <path value="Root:type:Categories">
+            <path value="FileClassCategory:type:Category">
+                <node name="Info">
+                    <entry key="DataType" value="None"/>
+                    <entry key="Name" value="Classification"/>
+                    <entry key="ReadOnly" value="1"/>
+                    <entry key="SingleValued" value="1"/>
+                </node>
+                <path value="artifact:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Artifact"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="convenience:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Convenience"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="derived:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Derived"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="design:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Design"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="none:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="None"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="other:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Other"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+                <path value="test:type:Label">
+                    <node name="Info">
+                        <entry key="Name" value="Test"/>
+                        <entry key="ReadOnly" value="READ_ONLY"/>
+                    </node>
+                </path>
+            </path>
+        </path>
+        <path value="Root:type:Files">
+            <path value="+wavefunction:type:File">
+                <node name="Info"/>
+                <path value="+atom:type:File">
+                    <node name="Info"/>
+                    <path value="1:type:DIR_SIGNIFIER">
+                        <node name="Info"/>
+                    </path>
+                    <path value="AtomicWavefunction.m:type:File">
+                        <node name="Info">
+                            <node name="Category">
+                                <entry key="UUID" value="FileClassCategory"/>
+                                <node name="Label">
+                                    <entry key="UUID" value="design"/>
+                                </node>
+                            </node>
+                        </node>
+                    </path>
+                </path>
+                <path value="+projection:type:File">
+                    <node name="Info"/>
+                    <path value="1:type:DIR_SIGNIFIER">
+                        <node name="Info"/>
+                    </path>
+                </path>
+                <path value="+visualization:type:File">
+                    <node name="Info"/>
+                    <path value="1:type:DIR_SIGNIFIER">
+                        <node name="Info"/>
+                    </path>
+                </path>
+                <path value="1:type:DIR_SIGNIFIER">
+                    <node name="Info"/>
+                </path>
+                <path value="docs:type:File">
+                    <node name="Info"/>
+                    <path value="1:type:DIR_SIGNIFIER">
+                        <node name="Info"/>
+                    </path>
+                    <path value="DeveloperDocs:type:File">
+                        <node name="Info"/>
+                        <path value="1:type:DIR_SIGNIFIER">
+                            <node name="Info"/>
+                        </path>
+                        <path value="Wavefunction Projection.mlx:type:File">
+                            <node name="Info">
+                                <node name="Category">
+                                    <entry key="UUID" value="FileClassCategory"/>
+                                    <node name="Label">
+                                        <entry key="UUID" value="design"/>
+                                    </node>
+                                </node>
+                            </node>
+                        </path>
+                    </path>
+                </path>
+            </path>
+        </path>
+        <path value="Root:type:ProjectPath">
+            <path value="79bf1f26-6bee-4ca1-8221-65d847a75078:type:Reference">
+                <node name="Info">
+                    <entry key="Ref" value="+wavefunction/docs/DeveloperDocs"/>
+                    <entry key="Type" value="Relative"/>
+                </node>
+            </path>
+            <path value="b67b9cd4-f811-40ee-b830-3db2368f6845:type:Reference">
+                <node name="Info">
+                    <entry key="Ref" value=""/>
+                    <entry key="Type" value="Relative"/>
+                </node>
+            </path>
+        </path>
+    </MetadataNode>
+    <Files>
+        <File path="+wavefunction/+atom/AtomicWavefunction.m" value="aecc4388"/>
+        <File path="+wavefunction/+atom" value="-1"/>
+        <File path="+wavefunction/+projection" value="-1"/>
+        <File path="+wavefunction/+visualization" value="-1"/>
+        <File path="+wavefunction/docs/DeveloperDocs/Wavefunction Projection.mlx" value="9ebb7ae6"/>
+        <File path="+wavefunction/docs/DeveloperDocs" value="-1"/>
+        <File path="+wavefunction/docs" value="-1"/>
+        <File path="+wavefunction" value="-1"/>
+        <File path="Wavefunction.prj" value="e0b87f15"/>
+        <File path="resources/project/3JmlXy2oVyS-l8FHTGrC2Hz-w0w/2OL4zHXx_0VxU6_5oaHtE_LOgWwd.xml" value="f93b6880"/>
+        <File path="resources/project/3JmlXy2oVyS-l8FHTGrC2Hz-w0w/2OL4zHXx_0VxU6_5oaHtE_LOgWwp.xml" value="397a12cc"/>
+        <File path="resources/project/3JmlXy2oVyS-l8FHTGrC2Hz-w0w/oPQP71R5Lgn22gYalyq7MIo5e0Id.xml" value="e0face9f"/>
+        <File path="resources/project/3JmlXy2oVyS-l8FHTGrC2Hz-w0w/oPQP71R5Lgn22gYalyq7MIo5e0Ip.xml" value="c4f2d364"/>
+        <File path="resources/project/3JmlXy2oVyS-l8FHTGrC2Hz-w0w" value="-1"/>
+        <File path="resources/project/5XVvq5kDYnZcHxIYDYzgqeWsd_I/MNiP2LKsFJ_4br7mOBf5J2XfHe8d.xml" value="e0face9f"/>
+        <File path="resources/project/5XVvq5kDYnZcHxIYDYzgqeWsd_I/MNiP2LKsFJ_4br7mOBf5J2XfHe8p.xml" value="2e8d95d1"/>
+        <File path="resources/project/5XVvq5kDYnZcHxIYDYzgqeWsd_I/Ssudyi1eNyjTeKSM8_YpNYAHir0d.xml" value="f93b6880"/>
+        <File path="resources/project/5XVvq5kDYnZcHxIYDYzgqeWsd_I/Ssudyi1eNyjTeKSM8_YpNYAHir0p.xml" value="397a12cc"/>
+        <File path="resources/project/5XVvq5kDYnZcHxIYDYzgqeWsd_I" value="-1"/>
+        <File path="resources/project/EEtUlUb-dLAdf0KpMVivaUlztwA/1iOcTjm1_wnzXEhV3MJCsZkX6v8d.xml" value="d51a0ba5"/>
+        <File path="resources/project/EEtUlUb-dLAdf0KpMVivaUlztwA/1iOcTjm1_wnzXEhV3MJCsZkX6v8p.xml" value="abdaf97e"/>
+        <File path="resources/project/EEtUlUb-dLAdf0KpMVivaUlztwA/tGdlxqUk-l3UH4c7ST-OQeKnbVwd.xml" value="4f5d03a9"/>
+        <File path="resources/project/EEtUlUb-dLAdf0KpMVivaUlztwA/tGdlxqUk-l3UH4c7ST-OQeKnbVwp.xml" value="beb35b7f"/>
+        <File path="resources/project/EEtUlUb-dLAdf0KpMVivaUlztwA" value="-1"/>
+        <File path="resources/project/GvoSOdPq6vrNR5nFLOVKW0phu1A/3JmlXy2oVyS-l8FHTGrC2Hz-w0wd.xml" value="f93b6880"/>
+        <File path="resources/project/GvoSOdPq6vrNR5nFLOVKW0phu1A/3JmlXy2oVyS-l8FHTGrC2Hz-w0wp.xml" value="fe88aa54"/>
+        <File path="resources/project/GvoSOdPq6vrNR5nFLOVKW0phu1A/nRtfL8zJjiz5j5zaB4lsEmWyOvEd.xml" value="f93b6880"/>
+        <File path="resources/project/GvoSOdPq6vrNR5nFLOVKW0phu1A/nRtfL8zJjiz5j5zaB4lsEmWyOvEp.xml" value="397a12cc"/>
+        <File path="resources/project/GvoSOdPq6vrNR5nFLOVKW0phu1A" value="-1"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/4jUvqsaWDid70qyQWVT_rXWnSUgd.xml" value="f93b6880"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/4jUvqsaWDid70qyQWVT_rXWnSUgp.xml" value="397a12cc"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/5XVvq5kDYnZcHxIYDYzgqeWsd_Id.xml" value="f93b6880"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/5XVvq5kDYnZcHxIYDYzgqeWsd_Ip.xml" value="60240462"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/GvoSOdPq6vrNR5nFLOVKW0phu1Ad.xml" value="f93b6880"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/GvoSOdPq6vrNR5nFLOVKW0phu1Ap.xml" value="92e6e919"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/RvMT3OlUSifT-88-5oRu29EmdWMd.xml" value="f93b6880"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/RvMT3OlUSifT-88-5oRu29EmdWMp.xml" value="72a67302"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/uF47bbQsDSLAskHvMjDhpy4YXOAd.xml" value="f93b6880"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc/uF47bbQsDSLAskHvMjDhpy4YXOAp.xml" value="85d981cc"/>
+        <File path="resources/project/IhHoa0ZODg2TmRggGaBO3VgTZuc" value="-1"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/2kj09UetkV_lru3gvSPXnY6-nM4d.xml" value="c2003660"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/2kj09UetkV_lru3gvSPXnY6-nM4p.xml" value="5c97809f"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/KKyDJtbdIBOlaeHmIZd5VX6vqx8d.xml" value="636e3d49"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/KKyDJtbdIBOlaeHmIZd5VX6vqx8p.xml" value="15d90cfe"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/QWNDYJD5mGW1bWYvPx9DtKnxzw4d.xml" value="fd15fba5"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/QWNDYJD5mGW1bWYvPx9DtKnxzw4p.xml" value="f06a1feb"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/R1RggVhA72agIvELiuhWPRS8F0Id.xml" value="76fe487"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/R1RggVhA72agIvELiuhWPRS8F0Ip.xml" value="dbae513d"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/aEHSZBIY-yve10yGis12Zr5DLZod.xml" value="27f415b6"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/aEHSZBIY-yve10yGis12Zr5DLZop.xml" value="b32151db"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/j4xwF_j8iFTVayUMfxLgMnTbencd.xml" value="12291020"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/j4xwF_j8iFTVayUMfxLgMnTbencp.xml" value="e9a0a6a2"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/r8LR4nLmg9ai3oHrW1r_-KocQzkd.xml" value="ff3df3fc"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs/r8LR4nLmg9ai3oHrW1r_-KocQzkp.xml" value="2ec7d8d2"/>
+        <File path="resources/project/NjSPEMsIuLUyIpr2u1Js5bVPsOs" value="-1"/>
+        <File path="resources/project/Project.xml" value="c4d68aeb"/>
+        <File path="resources/project/RvMT3OlUSifT-88-5oRu29EmdWM/U3ik3AqAS7pU8hlkneO6glzbcJAd.xml" value="f93b6880"/>
+        <File path="resources/project/RvMT3OlUSifT-88-5oRu29EmdWM/U3ik3AqAS7pU8hlkneO6glzbcJAp.xml" value="397a12cc"/>
+        <File path="resources/project/RvMT3OlUSifT-88-5oRu29EmdWM" value="-1"/>
+        <File path="resources/project/fjRQtWiSIy7hIlj-Kmk87M7s21k/NjSPEMsIuLUyIpr2u1Js5bVPsOsd.xml" value="4c8c8d81"/>
+        <File path="resources/project/fjRQtWiSIy7hIlj-Kmk87M7s21k/NjSPEMsIuLUyIpr2u1Js5bVPsOsp.xml" value="4350c56a"/>
+        <File path="resources/project/fjRQtWiSIy7hIlj-Kmk87M7s21k" value="-1"/>
+        <File path="resources/project/qaw0eS1zuuY1ar9TdPn1GMfrjbQ/IhHoa0ZODg2TmRggGaBO3VgTZucd.xml" value="f93b6880"/>
+        <File path="resources/project/qaw0eS1zuuY1ar9TdPn1GMfrjbQ/IhHoa0ZODg2TmRggGaBO3VgTZucp.xml" value="290080eb"/>
+        <File path="resources/project/qaw0eS1zuuY1ar9TdPn1GMfrjbQ" value="-1"/>
+        <File path="resources/project/root/EEtUlUb-dLAdf0KpMVivaUlztwAp.xml" value="161b3ad7"/>
+        <File path="resources/project/root/GiiBklLgTxteCEmomM8RCvWT0nQd.xml" value="369c87d6"/>
+        <File path="resources/project/root/GiiBklLgTxteCEmomM8RCvWT0nQp.xml" value="914a4ba6"/>
+        <File path="resources/project/root/fjRQtWiSIy7hIlj-Kmk87M7s21kp.xml" value="85b0999b"/>
+        <File path="resources/project/root/qaw0eS1zuuY1ar9TdPn1GMfrjbQp.xml" value="1d580731"/>
+        <File path="resources/project/rootp.xml" value="f93b6880"/>
+        <File path="resources/project/root" value="-1"/>
+        <File path="resources/project/uF47bbQsDSLAskHvMjDhpy4YXOA/w-lk54CdwJNJXwGQ-O6kO8fCes4d.xml" value="f93b6880"/>
+        <File path="resources/project/uF47bbQsDSLAskHvMjDhpy4YXOA/w-lk54CdwJNJXwGQ-O6kO8fCes4p.xml" value="397a12cc"/>
+        <File path="resources/project/uF47bbQsDSLAskHvMjDhpy4YXOA" value="-1"/>
+        <File path="resources/project/uuid-8d3fa084-cb8d-4ad3-a8b2-e3bdeba48616.xml" value="f93b6880"/>
+        <File path="resources/project" value="-1"/>
+        <File path="resources" value="-1"/>
+    </Files>
+    <Date value="2025年1月6日 0:26:57"/>
+</Info>
