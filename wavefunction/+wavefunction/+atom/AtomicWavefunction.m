@@ -1,7 +1,7 @@
 classdef AtomicWavefunction < handle
     %ATOMICWAVEFUNCTION Summary of this class goes here
 
-    properties (Access = private)
+    properties (Access = public)
         lMax (1, 1) uint16 = 0
         gk (:, 1) Ggrid
         Ylm (:, :) double
@@ -54,11 +54,9 @@ classdef AtomicWavefunction < handle
 
             % Compute cos(θ) and sin(θ)
             sqrtGkk = sqrt(this.gk.gkk);
-            if sqrtGkk < eps
-                cosTheta = 0;
-            else
-                cosTheta = this.gk.gkz ./ sqrtGkk;
-            end
+            cosTheta = zeros(size(sqrtGkk));
+            mask = sqrtGkk >= eps;
+            cosTheta(mask) = this.gk.gkz(mask) ./ sqrtGkk(mask);
             sinTheta = sqrt(max(0, 1-cosTheta.^2));
 
             % Compute φ for later use in cos(mφ) and sin(mφ)
@@ -69,20 +67,23 @@ classdef AtomicWavefunction < handle
             phi = zeros(this.gk.ng, 1);
             phi(condition1) = atan(this.gk.gky(condition1) ./ this.gk.gkx(condition1));
             phi(condition2) = atan(this.gk.gky(condition2) ./ this.gk.gkx(condition2)) + pi;
-            phi(condition3) = sign(pi / 2, this.gk.gky(condition3));
+            phi(condition3) = pi/2 .* sign(this.gk.gky(condition3));
 
             % Init the first few values of Qlm
             Qlm = zeros(this.gk.ng, (this.lMax+1)^2, 'double');
             Qlm(:, 1) = sqrt(1.0/4*pi); % l = 0, m = 0
             Qlm(:, 2) = sqrt(3.0/4*pi) * cosTheta; % l = 1, m = 0
-            Qlm(:, 4) = -sqrt(3.0/8*pi) * sinTheta; % l = 1, m = 1
+            Qlm(:, 3) = -sqrt(3.0/8*pi) * sinTheta; % l = 1, m = 1
 
             lmax = this.lMax;
             for ig = 1:this.gk.ng
                 % Init the first few values of Ylm
                 Ylm(ig, 1) = Qlm(ig, 1); % l = 0, m = 0
                 Ylm(ig, 2) = Qlm(ig, 2); % l = 1, m = 0
-                Ylm(ig, 4) = sqrt(2.0) * Qlm(ig, 4) * cos(phi(ig)); % l = 1, m = 1
+                Ylm(ig, 3) = sqrt(2.0) * Qlm(ig, 3) * cos(phi(ig)); % l = 1, m = 1
+
+                Qlm(ig, 4) = sqrt(3.0/8*pi) * sinTheta(ig); % l = 1, m = -1
+                Ylm(ig, 4) = sqrt(2.0) * Qlm(ig, 3) * sin(phi(ig)); % l = 1, m = -1
 
                 for l = 2:lmax
                     for m = 0:l-2
