@@ -4,7 +4,13 @@ classdef AtomicWavefunction < handle
     properties (Access = public)
         lMax (1, 1) uint16 = 0
         gk (:, 1) Ggrid
+    end
+
+    properties (Access = public)
+        crystal Crystal
         Ylm (:, :) double
+        PpData struct
+        chiq (:, 1) cell
     end
 
     methods
@@ -14,11 +20,13 @@ classdef AtomicWavefunction < handle
                 crystal Crystal {mustBeNonempty}
             end
 
+            this.crystal = crystal;
             this.computelMax(crystal);
             % 计算 k+G 得到的网格
             this.gk = Ggrid(crystal).addKPoints(crystal.kpts);
 
-            this.Ylm = this.computeYlm();
+            this.computeYlm();
+            this.interpolateChi();
         end
     end
 
@@ -29,6 +37,8 @@ classdef AtomicWavefunction < handle
                 crystal Crystal {mustBeNonempty}
             end
 
+            this.PpData = struct();
+
             symbol = {crystal.atoms.symbol};
             for i = 1:length(symbol)
                 pp = pseudopotential.PpData(symbol{i});
@@ -37,6 +47,7 @@ classdef AtomicWavefunction < handle
                         'UPF file for element %s must contain PP_PSWFC data.', symbol{i});
                 end
                 this.lMax = max(this.lMax, max(pp.pswfc.l));
+                this.PpData.(symbol{i}) = pp;
             end
         end
 
@@ -118,6 +129,93 @@ classdef AtomicWavefunction < handle
                     Qlm(ig, lm1)  = sqrt(2*l+1) * cosTheta(ig) * Qlm(ig, lm2);
                     Ylm(ig, lm1) = sqrt(2.0) * Qlm(ig, lm1) * cos(m * phi(ig)); % Y(l, l-1)
                     Ylm(ig, lm1+1) = sqrt(2.0) * Qlm(ig, lm1) * cos(m * phi(ig)); % Y(l, -(l-1))
+                end
+            end
+            this.Ylm = Ylm;
+        end
+
+        function interpolateChi(this)
+            arguments
+                this
+            end
+
+            % Define spherical Bessel function j_v(z)
+            function jv = sphericalBesselJ(v, z)
+                jv = zeros(size(z));
+
+                small = abs(z) < eps;
+                notSmall = ~small;
+
+                % Handle z >= eps using the standard formula
+                jv(notSmall) = sqrt(pi/2) ./ sqrt(z(notSmall)) .* besselj(v+0.5, z(notSmall));
+
+                % Handle z < eps based on the value of v
+                if any(small)
+                    switch v
+                        case -1
+                            error('sphericalBesselJ: Undefined for v = -1 when z < eps.');
+                        case 0
+                            jv(small) = 1;
+                        otherwise
+                            jv(small) = 0;
+                    end
+                end
+            end
+
+            atomTypes = fieldnames(this.PpData);
+            this.chiq = cell(length(atomTypes), 1);
+            for i = 1:length(atomTypes)
+                atomType = atomTypes{i};
+
+                % Generate q grid (0:dq:max(|q+G|)) with dq=0.01
+                dq = 0.01;
+                qgSqrt = sqrt(this.gk.gkk);
+                qGrid = 0:dq:(max(qgSqrt)+4*dq);
+
+                % Simpson integrate and Lagrange interpolation
+                for index = 1:this.PpData.(atomType).info.number_of_wfc
+                    l = this.PpData.(atomType).pswfc.l(index);
+
+                    % Limit the radial grid in the psedopotentials files up to 10 a.u.
+                    % to cut off the numerical noise arising from the large-r tail
+                    % in cases like the integration of V_loc-Z/r
+                    r = this.PpData.(atomType).r(this.PpData.(atomType).r <= 10.0);
+                    rab = this.PpData.(atomType).rab(1:length(r));
+
+                    % Simpson integrate to compute the table for interpolation
+                    result = zeros(length(qGrid), length(r));
+                    for q = 1:length(qGrid)
+                        fun = sphericalBesselJ(l, qGrid(q) * r) .* ...
+                            this.PpData.(atomType).pswfc.chi(1:length(r), index) .* r;
+                        if mod(length(r), 2) == 1
+                            factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, 1];
+                            range = 1:length(r);
+                        else
+                            factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, -1];
+                            range = [1:(length(r)-1), length(r)-1];
+                        end
+                        result(q, :) = 1.0/3.0 * sum(factor .* fun(range) .* rab(range));
+                    end
+
+                    % Final interpolation table
+                    resultTable = result * (4*pi/sqrt(this.crystal.vol));
+
+                    % Lagrange interpolation for all |q+G|
+                    px = qgSqrt ./ dq - floor(qgSqrt ./ dq);
+                    ux = 1.0 - px;
+                    vx = 2.0 - px;
+                    wx = 3.0 - px;
+
+                    i0 = floor(qgSqrt ./ dq) + 1;
+                    i1 = i0 + 1;
+                    i2 = i0 + 2;
+                    i3 = i0 + 3;
+
+                    this.chiq{i, 1} = ...
+                        resultTable(i0, :) .* ux .* vx .* wx ./ 6.0 + ...
+                        resultTable(i1, :) .* px .* vx .* wx ./ 2.0 - ...
+                        resultTable(i2, :) .* px .* ux .* wx ./ 2.0 + ...
+                        resultTable(i3, :) .* px .* ux .* vx ./ 6.0;
                 end
             end
         end
