@@ -3,7 +3,7 @@ classdef AtomicWavefunction < handle
 
     properties (Access = public)
         lMax (1, 1) uint16 = 0
-        atomicWavefunction struct
+        atomicWavefunction cell
 
         gk (:, 1) Ggrid
         crystal Crystal
@@ -33,6 +33,61 @@ classdef AtomicWavefunction < handle
             this.interpolateChiq();
             this.computeSk();
             this.constructAtomicWavefunction();
+        end
+
+        function printAtomicStates(this)
+            arguments
+                this
+            end
+
+            fprintf('     Atomic states used for projection\n');
+            fprintf('     (read from pseudopotential files):\n\n');
+
+            % Print each atomic state
+            totalStates = 0;
+            for i = 1:this.crystal.natoms
+                atomType = this.crystal.atomlist(1, i).symbol;
+                for index = 1:this.PpData.(atomType).info.number_of_wfc
+                    l = this.PpData.(atomType).pswfc.l(index);
+                    if ~this.crystal.noncolin
+                        for mIndex = 1:(2*l+1)
+                            totalStates = totalStates + 1;
+                            if mIndex == 1
+                                m = 0;
+                            elseif mod(mIndex, 2) == 0
+                                m = mIndex/2;
+                            else
+                                m = - (mIndex-1)/2;
+                            end
+                            fprintf('     state #%3d: atom%4d (%s), wfc%3d (l=%d m=%2d)\n', ...
+                                totalStates, i, atomType, index, l, m);
+                        end
+                    else
+                        if this.PpData.(atomType).info.has_so
+                            jArray = this.PpData.(atomType).spinorb.jchi(index);
+                        elseif this.crystal.lspinorb
+                            jArray = [l-1/2, l+1/2];
+                        end
+
+                        for j = jArray(jArray>0)
+                            if abs(j - l - 0.5) < eps
+                                % j = l + 1/2
+                                mjArray = (-l-0.5:l+0.5)';
+                            else
+                                % j = l - 1/2
+                                mjArray = (-l+0.5:l-0.5)';
+                            end
+                            for mj = mjArray
+                                totalStates = totalStates + 1;
+                                fprintf('     state #%3d: atom%4d (%s), wfc%3d (l=%d j=%.1f m_j=%4.1f)\n', ...
+                                    totalStates, i, atomType, index, l, j, mj);
+                            end
+                        end
+                    end
+                end
+            end
+
+            fprintf('\n');
         end
     end
 
@@ -152,57 +207,61 @@ classdef AtomicWavefunction < handle
             for i = 1:length(atomTypes)
                 atomType = atomTypes{i};
 
+                % Limit the radial grid in the psedopotentials files up to 10 a.u.
+                % to cut off the numerical noise arising from the large-r tail
+                % in cases like the integration of V_loc-Z/r
+                r = this.PpData.(atomType).r(this.PpData.(atomType).r <= 10.0);
+                rab = this.PpData.(atomType).rab(1:length(r));
+
+                % Simpson integrate to compute the table for interpolation
+                if mod(length(r), 2) == 1
+                    factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, 1];
+                    range = 1:length(r);
+                else
+                    factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, -1];
+                    range = [1:(length(r)-1), length(r)-1];
+                end
+
                 % Generate q grid (0:dq:max(|q+G|)) with dq=0.01
                 dq = 0.01;
                 qgSqrt = sqrt(this.gk.gkk);
                 qGrid = 0:dq:(max(qgSqrt)+4*dq);
 
+                % Parameters for Lagrange interpolation for all |q+G|
+                px = qgSqrt ./ dq - floor(qgSqrt ./ dq);
+                ux = 1.0 - px;
+                vx = 2.0 - px;
+                wx = 3.0 - px;
+
+                i0 = floor(qgSqrt ./ dq) + 1;
+                i1 = i0 + 1;
+                i2 = i0 + 2;
+                i3 = i0 + 3;
+
+                interpolationResult = zeros(length(qgSqrt), this.PpData.(atomType).info.number_of_wfc);
+
                 % Simpson integrate and Lagrange interpolation
                 for index = 1:this.PpData.(atomType).info.number_of_wfc
                     l = this.PpData.(atomType).pswfc.l(index);
 
-                    % Limit the radial grid in the psedopotentials files up to 10 a.u.
-                    % to cut off the numerical noise arising from the large-r tail
-                    % in cases like the integration of V_loc-Z/r
-                    r = this.PpData.(atomType).r(this.PpData.(atomType).r <= 10.0);
-                    rab = this.PpData.(atomType).rab(1:length(r));
-
-                    % Simpson integrate to compute the table for interpolation
-                    if mod(length(r), 2) == 1
-                        factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, 1];
-                        range = 1:length(r);
-                    else
-                        factor = [1, abs(mod(2:(length(r)-1), 2) - 2) * 2, -1];
-                        range = [1:(length(r)-1), length(r)-1];
-                    end
-
-                    result = zeros(length(qGrid), length(r));
+                    result = zeros(length(qGrid), 1);
                     for q = 1:length(qGrid)
                         fun = sphericalBesselJ(l, qGrid(q) * r) .* ...
                             this.PpData.(atomType).pswfc.chi(1:length(r), index) .* r;
-                        result(q, index) = 1.0/3.0 * sum(factor' .* fun(range) .* rab(range));
+                        result(q, 1) = 1.0/3.0 * sum(factor' .* fun(range) .* rab(range));
                     end
 
                     % Final interpolation table
                     resultTable = result * (4*pi/sqrt(this.crystal.vol));
 
                     % Lagrange interpolation for all |q+G|
-                    px = qgSqrt ./ dq - floor(qgSqrt ./ dq);
-                    ux = 1.0 - px;
-                    vx = 2.0 - px;
-                    wx = 3.0 - px;
-
-                    i0 = floor(qgSqrt ./ dq) + 1;
-                    i1 = i0 + 1;
-                    i2 = i0 + 2;
-                    i3 = i0 + 3;
-
-                    this.chiq.(atomType) = ...
-                        resultTable(i0, :) .* ux .* vx .* wx ./ 6.0 + ...
-                        resultTable(i1, :) .* px .* vx .* wx ./ 2.0 - ...
-                        resultTable(i2, :) .* px .* ux .* wx ./ 2.0 + ...
-                        resultTable(i3, :) .* px .* ux .* vx ./ 6.0;
+                    interpolationResult(:, index) = ...
+                        resultTable(i0, 1) .* ux .* vx .* wx ./ 6.0 + ...
+                        resultTable(i1, 1) .* px .* vx .* wx ./ 2.0 - ...
+                        resultTable(i2, 1) .* px .* ux .* wx ./ 2.0 + ...
+                        resultTable(i3, 1) .* px .* ux .* vx ./ 6.0;
                 end
+                this.chiq.(atomType) = interpolationResult;
             end
         end
 
@@ -213,7 +272,20 @@ classdef AtomicWavefunction < handle
 
             % structureFactor is a matrix with dimensions:
             % this.crystal.natoms * this.gk.ng
-            this.sk = exp(2*pi*1i*(this.crystal.xyzlist * this.gk.kkxyz'));
+            % TODO: use Miller indices (hkl)?
+            % this.sk = exp(-2*pi*1i*(this.crystal.xyzlist * this.gk.kkxyz'));
+
+            % The crystal structure's reciprocal lattice vectors
+            b = this.crystal.supercell \ (2 * pi * eye(3));
+            b = b';
+
+            for i=1:size(this.crystal.atomlist, 2)
+                tau = this.crystal.xyzlist(i, :);
+                x = b(1, :) * tau';
+                y = b(2, :) * tau';
+                z = b(3, :) * tau';
+                this.crystal.supercell .* this.gk.kkxyz;
+            end
         end
 
         function constructAtomicWavefunction(this)
@@ -221,109 +293,124 @@ classdef AtomicWavefunction < handle
                 this
             end
 
-            this.atomicWavefunction = struct();
             counter = 0;
+            wavefunction = zeros(this.gk.ng, (this.lMax+1)^2, 'double');
+            this.atomicWavefunction = cell(1);
 
-            for i = 1:this.crystal.natoms
-                atomType = this.crystal.atomlist(1, i).symbol;
+            if ~this.crystal.noncolin
+                % LSDA or nonmagnetic case
+                for i = 1:this.crystal.natoms
+                    atomType = this.crystal.atomlist(1, i).symbol;
 
-                % wavefunctionCell = cell();
-                for index = 1:this.PpData.(atomType).info.number_of_wfc
-                    l = this.PpData.(atomType).pswfc.l(index);
-
-                    if ~this.crystal.noncolin
-                        % LSDA or nonmagnetic case
-                        wavefunction = zeros(this.gk.ng, (this.lMax+1)^2, 'double');
+                    for index = 1:this.PpData.(atomType).info.number_of_wfc
+                        l = this.PpData.(atomType).pswfc.l(index);
                         for m = 1:(2*l+1)
                             lm = l^2 + m;
                             counter = counter + 1;
                             wavefunction(:, counter) = (1i)^(-l) * (this.sk(i, :) ...
                                 * this.Ylm(:, lm)) * this.chiq.(atomType)(:, index);
                         end
-                        wavefunctionCell{1, 1} = wavefunction;
-                    else
-                        % Noncolin case
-                        % compute spin direction
-                        alpha = this.crystal.atomlist(1, i).theta;
-                        gamma = -this.crystal.atomlist(1, i).phi + 0.5*pi;
-
-                        spin1Up = cos(alpha/2) * exp(1i*gamma/2);
-                        spin1Down = 1i * sin(alpha/2) * exp(-1i*gamma/2);
-                        spin2Up = cos((alpha+pi)/2) * exp(1i*gamma/2);
-                        spin2Down = 1i * sin((alpha+pi)/2) * exp(-1i*gamma/2);
-
-                        if this.PpData.(atomType).info.has_so
-
-                        elseif this.crystal.lspinorb
-                            % spin-orbit case with no spin-orbit pseudopotential
-                            % atomic_wfc_so2
-                            % spin-orbit case with no spin-orbit PP
-                            j = [l-1/2, l+1/2];
-                            for j = j(j>0)
-                                % Compute factors of spin-angular functions in two-component
-                                if abs(j - l - 0.5) < eps
-                                    % j = l + 1/2
-                                    mj = (-l-0.5:l+0.5)';
-                                    cgFactor = zeros(length(mj), 2);
-                                    cgFactor(:, 1) = sqrt((l+mj+0.5) / (2*l+1));
-                                    cgFactor(:, 2) = sqrt((l-mj+0.5) / (2*l+1));
-                                else
-                                    % j = l - 1/2
-                                    mj = (-l+0.5:l-0.5)';
-                                    cgFactor = zeros(length(mj), 2);
-                                    cgFactor(:, 1) = sqrt((l-mj+0.5) / (2*l+1));
-                                    cgFactor(:, 2) = -sqrt((l+mj+0.5) / (2*l+1));
-                                end
-
-                                for mjIndex = 1:length(mj)
-                                    if all(abs(cgFactor(mjIndex, :)) < eps)
-                                        continue
-                                    end
-
-                                    counter = counter + 1;
-
-                                    for is = 1:2
-                                        factor = cgFactor(mjIndex, is);
-                                        if abs(factor) < eps
-                                            continue
-                                        end
-
-                                        wavefunction = zeros(this.gk.ng, (this.lMax+1)^2, 'like', 1i);
-                                        for m = 1:(2*l+1)
-                                            lm = l^2 + m;
-                                            complexYlm = complex(this.Ylm(:, lm));
-                                            if m > 1 && mod(m, 2) == 0
-                                                complexYlm(:, 1) = (-1)^(m/2)/sqrt(2) * (this.Ylm(:, lm)+1i*this.Ylm(:, lm+1));
-                                            elseif m > 1 && mod(m, 2) == 1
-                                                complexYlm(:, 1) = 1/sqrt(2) * (this.Ylm(:, lm-1)-1i*this.Ylm(:, lm));
-                                            end
-
-                                            wavefunction(:, counter) = wavefunction(:, counter) ...
-                                                + factor * (1i)^(-l) * (this.sk(i, :) * complexYlm) * this.chiq.(atomType)(:, index);
-                                        end
-                                        wavefunctionCell{is, 1} = wavefunction;
-                                    end
-                                end
-                            end
-                        else
-                            % noncolinear case
-                            % magnetization along (spin1Up, spin1Down) and (spin2Up, spin2Down)
-                            wavefunction = zeros(this.gk.ng, (this.lMax+1)^2, 'double');
-                            for m = 1:(2*l+1)
-                                lm = l^2 + m;
-                                counter = counter + 1;
-                                wavefunction(:, counter) = (1i)^(-l) * (this.sk(i, :) ...
-                                    * this.Ylm(:, lm)) * this.chiq.(atomType)(:, index);
-                            end
-                            wavefunctionCell{1, 1} = wavefunction * spin1Up;
-                            wavefunctionCell{2, 1} = wavefunction * spin1Down;
-                            wavefunctionCell{3, 1} = wavefunction * spin2Up;
-                            wavefunctionCell{4, 1} = wavefunction * spin2Down;
-                        end
                     end
                 end
 
-                this.atomicWavefunction.(atomType) = wavefunctionCell;
+                wavefunctionCell{1, 1} = wavefunction;
+                this.atomicWavefunction = wavefunctionCell;
+                return
+            end
+
+            for i = 1:this.crystal.natoms
+                atomType = this.crystal.atomlist(1, i).symbol;
+
+                % compute spin direction
+                alpha = this.crystal.atomlist(1, i).theta;
+                gamma = -this.crystal.atomlist(1, i).phi + 0.5*pi;
+
+                spin1Up = cos(alpha/2) * exp(1i*gamma/2);
+                spin1Down = 1i * sin(alpha/2) * exp(-1i*gamma/2);
+                spin2Up = cos((alpha+pi)/2) * exp(1i*gamma/2);
+                spin2Down = 1i * sin((alpha+pi)/2) * exp(-1i*gamma/2);
+
+                wavefunctionCell = cell(1, 1);
+                if ~this.PpData.(atomType).info.has_so && ~this.crystal.lspinorb
+                    % noncolinear case
+                    % magnetization along (spin1Up, spin1Down) and (spin2Up, spin2Down)
+                    wavefunction = zeros(this.gk.ng, (this.lMax+1)^2, 'double');
+                    for index = 1:this.PpData.(atomType).info.number_of_wfc
+                        l = this.PpData.(atomType).pswfc.l(index);
+                        for m = 1:(2*l+1)
+                            lm = l^2 + m;
+                            counter = counter + 1;
+                            wavefunction(:, counter) = (1i)^(-l) * (this.sk(i, :) ...
+                                * this.Ylm(:, lm)) * this.chiq.(atomType)(:, index);
+                        end
+                    end
+                    wavefunctionCell{1, 1} = wavefunction * spin1Up;
+                    wavefunctionCell{2, 1} = wavefunction * spin1Down;
+                    wavefunctionCell{3, 1} = wavefunction * spin2Up;
+                    wavefunctionCell{4, 1} = wavefunction * spin2Down;
+
+                else
+                    maxCounter = 2 * (this.PpData.(atomType).info.number_of_wfc+1)^2;
+                    wavefunction = zeros(2, this.gk.ng, maxCounter, 'like', 1i);
+                    for index = 1:this.PpData.(atomType).info.number_of_wfc
+                        l = this.PpData.(atomType).pswfc.l(index);
+                        if this.PpData.(atomType).info.has_so
+                            j = this.PpData.(atomType).spinorb.jchi(index);
+                        elseif this.crystal.lspinorb
+                            j = [l-1/2, l+1/2];
+                        end
+
+                        for j = j(j>0)
+                            % Compute factors of spin-angular functions in two-component
+                            if abs(j - l - 0.5) < eps
+                                % j = l + 1/2
+                                mj = (-l-0.5:l+0.5)';
+                                cgFactor = zeros(length(mj), 2);
+                                cgFactor(:, 1) = sqrt((l+mj+0.5) / (2*l+1));
+                                cgFactor(:, 2) = sqrt((l-mj+0.5) / (2*l+1));
+                            else
+                                % j = l - 1/2
+                                mj = (-l+0.5:l-0.5)';
+                                cgFactor = zeros(length(mj), 2);
+                                cgFactor(:, 1) = sqrt((l-mj+0.5) / (2*l+1));
+                                cgFactor(:, 2) = -sqrt((l+mj+0.5) / (2*l+1));
+                            end
+
+                            for mjIndex = 1:length(mj)
+                                if all(abs(cgFactor(mjIndex, :)) < eps)
+                                    continue
+                                end
+
+                                counter = counter + 1;
+
+                                for is = 1:2
+                                    factor = cgFactor(mjIndex, is);
+                                    if abs(factor) < eps
+                                        continue
+                                    end
+
+                                    tmp = zeros(this.gk.ng, 1, 'like', 1i);
+                                    for m = 1:(2*l+1)
+                                        lm = l^2 + m;
+                                        complexYlm = complex(this.Ylm(:, lm));
+                                        if m > 1 && mod(m, 2) == 0
+                                            complexYlm(:, 1) = (-1)^(m/2)/sqrt(2) * (this.Ylm(:, lm)+1i*this.Ylm(:, lm+1));
+                                        elseif m > 1 && mod(m, 2) == 1
+                                            complexYlm(:, 1) = 1/sqrt(2) * (this.Ylm(:, lm-1)-1i*this.Ylm(:, lm));
+                                        end
+
+                                        tmp(:) = tmp(:) + factor * (1i)^(-l) * (this.sk(i, :) * complexYlm) * this.chiq.(atomType)(:, index);
+                                    end
+                                    wavefunction(is, :, counter) = tmp;
+                                end
+                            end
+                        end
+                    end
+                    wavefunctionCell{1, 1} = squeeze(wavefunction(1, :, 1:counter));
+                    wavefunctionCell{2, 1} = squeeze(wavefunction(2, :, 1:counter));
+                end
+
+                this.atomicWavefunction = wavefunctionCell;
             end
         end
     end
