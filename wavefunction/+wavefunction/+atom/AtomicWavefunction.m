@@ -200,7 +200,7 @@ classdef AtomicWavefunction < handle
                 this
             end
 
-            import wavefunction.atom.AtomicWavefunction.sphericalBesselJ;
+            import wavefunction.atom.AtomicWavefunction.*;
 
             atomTypes = fieldnames(this.PpData);
             this.chiq = struct();
